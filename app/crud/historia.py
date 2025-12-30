@@ -1,5 +1,5 @@
 from app.models.historia import HistoriaClinica
-from app.models.formulario import RespuestaGrupo, RespuestaFormulario
+from app.models.formulario import RespuestaGrupo, FormularioRespuesta
 from app.models.deportista import Deportista
 from app.models.archivo import ArchivoClinico
 
@@ -33,8 +33,8 @@ def obtener_historia_completa(db, historia_id):
 
     formularios = []
     for grupo in grupos:
-        respuestas = db.query(RespuestaFormulario).filter(
-            RespuestaFormulario.grupo_id == grupo.id
+        respuestas = db.query(FormularioRespuesta).filter(
+            FormularioRespuesta.grupo_id == grupo.id
         ).all()
 
         formularios.append({

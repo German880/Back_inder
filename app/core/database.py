@@ -33,3 +33,14 @@ SessionLocal = sessionmaker(
 )
 
 Base = declarative_base()
+
+def get_db():
+    """
+    Dependency para obtener la sesión de base de datos.
+    Se usa con FastAPI Depends().
+    """
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()

@@ -8,12 +8,13 @@ from app.core.database import Base, engine   # ✅ CORRECTO
 from app.models import *
 
 # Routers
-from app.api.v1 import deportistas, historias, citas, archivos, cie11, cups
+from app.api.v1 import deportistas, historias, citas, archivos, cie11, cups, catalogos
 
 app = FastAPI(
     title=settings.APP_NAME,
     version="0.1.0",
-    description="Backend Historia Clínica Deportiva - INDER"
+    description="Backend Historia Clínica Deportiva - INDER",
+    redirect_slashes=False  # ✅ Desactivar redirects automáticos
 )
 
 app.add_middleware(
@@ -42,3 +43,4 @@ app.include_router(citas.router, prefix="/api/v1/citas")
 app.include_router(archivos.router, prefix="/api/v1/archivos")
 app.include_router(cie11.router, prefix="/api/v1/cie11")
 app.include_router(cups.router, prefix="/api/v1/cups")
+app.include_router(catalogos.router, prefix="/api/v1/catalogos")

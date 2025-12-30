@@ -13,11 +13,16 @@ def get_db():
     finally:
         db.close()
 
-@router.post("/", response_model=DeportistaResponse)
+@router.post("", response_model=DeportistaResponse)
 def crear(data: DeportistaCreate, db: Session = Depends(get_db)):
-    return crear_deportista(db, data)
+    try:
+        return crear_deportista(db, data)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Error al crear deportista")
 
-@router.get("/", response_model=list[DeportistaResponse])
+@router.get("", response_model=list[DeportistaResponse])
 def listar(db: Session = Depends(get_db)):
     return listar_deportistas(db)
 

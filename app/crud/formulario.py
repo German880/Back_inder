@@ -1,4 +1,4 @@
-from app.models.formulario import RespuestaGrupo, RespuestaFormulario
+from app.models.formulario import RespuestaGrupo, FormularioRespuesta
 
 def crear_grupo(db, historia_id, formulario_id):
     grupo = RespuestaGrupo(
@@ -11,7 +11,7 @@ def crear_grupo(db, historia_id, formulario_id):
     return grupo
 
 def guardar_respuesta(db, grupo_id, campo, valor):
-    r = RespuestaFormulario(
+    r = FormularioRespuesta(
         grupo_id=grupo_id,
         campo=campo,
         valor=valor
