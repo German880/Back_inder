@@ -103,6 +103,17 @@ class RemisionEspecialistaCreate(RemisionEspecialistaBase):
     pass
 
 # ============================================================================
+# HISTORIA CLÍNICA BÁSICA
+# ============================================================================
+
+class HistoriaCreate(BaseModel):
+    """Crear una historia clínica básica"""
+    deportista_id: UUID
+    
+    class Config:
+        from_attributes = True
+
+# ============================================================================
 # HISTORIA CLÍNICA COMPLETA
 # ============================================================================
 
@@ -164,3 +175,6 @@ class HistoriaResponse(BaseModel):
     id: UUID
     deportista_id: UUID
     fecha_apertura: datetime
+    
+    class Config:
+        from_attributes = True
