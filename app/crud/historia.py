@@ -1,7 +1,9 @@
-from app.models.historia import HistoriaClinica
+from app.models.historia import HistoriaClinica, HistoriaClinicaJSON
 from app.models.formulario import RespuestaGrupo, FormularioRespuesta
 from app.models.deportista import Deportista
 from app.models.archivo import ArchivoClinico
+from datetime import date
+from uuid import uuid4
 
 def crear_historia(db, deportista_id):
     historia = HistoriaClinica(deportista_id=deportista_id)
@@ -73,3 +75,67 @@ def obtener_historia_completa(db, historia_id):
             for a in archivos
         ]
     }
+
+def crear_historia_completa(db, data):
+    """
+    Crear una historia clínica completa con todos los 7 pasos
+    
+    Args:
+        db: Sesión de base de datos
+        data: HistoriaClinicaCompleteCreate con todos los datos
+    
+    Returns:
+        Diccionario con el ID de la historia creada
+    """
+    try:
+        # 1. Crear historia clínica básica
+        historia = HistoriaClinica(
+            deportista_id=data.deportista_id,
+            fecha_apertura=date.today(),
+            estado_id="01b6e2e1-2c3d-4a5b-9c8d-1e2f3g4h5i6j"  # "Abierta"
+        )
+        db.add(historia)
+        db.flush()  # Obtener el ID generado
+        
+        # 2. Guardar datos completos como JSON
+        datos_json = HistoriaClinicaJSON(
+            historia_clinica_id=str(historia.id),
+            deportista_id=str(data.deportista_id),
+            datos_completos=data.model_dump()
+        )
+        db.add(datos_json)
+        
+        # 3. Commit
+        db.commit()
+        db.refresh(historia)
+        
+        return {
+            "id": str(historia.id),
+            "deportista_id": str(data.deportista_id),
+            "fecha_apertura": historia.fecha_apertura.isoformat(),
+            "message": "Historia clínica creada exitosamente"
+        }
+        
+    except Exception as e:
+        db.rollback()
+        raise ValueError(f"Error al crear historia clínica: {str(e)}")
+
+def obtener_historia_datos_completos(db, historia_id: str) -> dict:
+    """
+    Obtener historia clínica completa con todos los datos
+    
+    Args:
+        db: Sesión de base de datos
+        historia_id: ID de la historia clínica
+    
+    Returns:
+        Datos completos de la historia clínica
+    """
+    historia_json = db.query(HistoriaClinicaJSON).filter(
+        HistoriaClinicaJSON.historia_clinica_id == historia_id
+    ).first()
+    
+    if not historia_json:
+        raise ValueError(f"Historia clínica con ID {historia_id} no encontrada")
+    
+    return historia_json.datos_completos

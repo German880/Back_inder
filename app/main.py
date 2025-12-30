@@ -38,7 +38,7 @@ def health_check():
     }
 
 app.include_router(deportistas.router, prefix="/api/v1/deportistas")
-app.include_router(historias.router, prefix="/api/v1/historias")
+app.include_router(historias.router, prefix="/api/v1/historias_clinicas")
 app.include_router(citas.router, prefix="/api/v1/citas")
 app.include_router(archivos.router, prefix="/api/v1/archivos")
 app.include_router(cie11.router, prefix="/api/v1/cie11")

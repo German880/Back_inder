@@ -1,17 +1,12 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-from app.core.database import SessionLocal
+from sqlalchemy import or_
+from app.core.dependencies import get_db
 from app.schemas.deportista import DeportistaCreate, DeportistaResponse
 from app.crud.deportista import crear_deportista, listar_deportistas, obtener_deportista
+from app.models.deportista import Deportista
 
 router = APIRouter()
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 @router.post("", response_model=DeportistaResponse)
 def crear(data: DeportistaCreate, db: Session = Depends(get_db)):
@@ -25,6 +20,23 @@ def crear(data: DeportistaCreate, db: Session = Depends(get_db)):
 @router.get("", response_model=list[DeportistaResponse])
 def listar(db: Session = Depends(get_db)):
     return listar_deportistas(db)
+
+@router.get("/search", response_model=list[DeportistaResponse])
+def buscar(q: str = Query(...), db: Session = Depends(get_db)):
+    """Buscar deportistas por nombre, apellido o documento"""
+    q = q.strip()
+    if not q or len(q) < 2:
+        raise HTTPException(status_code=400, detail="El término de búsqueda debe tener al menos 2 caracteres")
+    
+    resultados = db.query(Deportista).filter(
+        or_(
+            Deportista.nombres.ilike(f"%{q}%"),
+            Deportista.apellidos.ilike(f"%{q}%"),
+            Deportista.numero_documento.ilike(f"%{q}%")
+        )
+    ).limit(10).all()
+    
+    return resultados
 
 @router.get("/{deportista_id}", response_model=DeportistaResponse)
 def obtener(deportista_id: str, db: Session = Depends(get_db)):

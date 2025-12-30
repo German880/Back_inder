@@ -1,24 +1,31 @@
-from app.models.deportista import Deportista
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import Session
+from app.models.deportista import Deportista
 
-def crear_deportista(db, data):
+def crear_deportista(db: Session, data):
+    """Crear nuevo deportista con validaciones previas"""
+    
+    # ✅ VALIDAR QUE NO EXISTA PRIMERO
+    deportista_existente = db.query(Deportista).filter(
+        Deportista.numero_documento == data.numero_documento
+    ).first()
+    
+    if deportista_existente:
+        raise ValueError(f"Ya existe un deportista con documento: {data.numero_documento}")
+    
     try:
-        # Crear el objeto deportista
         deportista = Deportista(**data.dict())
-        
-        # Agregar a la sesión
         db.add(deportista)
-        
-        # Hacer commit de la transacción
         db.commit()
-        
+        db.refresh(deportista)
         return deportista
+        
     except IntegrityError as e:
         db.rollback()
-        # Detectar si es un error de documento duplicado
         if "numero_documento" in str(e):
             raise ValueError("El número de documento ya existe en el sistema")
-        raise ValueError(f"Error de integridad en la base de datos: {str(e)}")
+        raise ValueError(f"Error de integridad: {str(e)}")
+        
     except Exception as e:
         db.rollback()
         raise
