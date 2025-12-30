@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import or_
 from app.core.dependencies import get_db
 from app.schemas.deportista import DeportistaCreate, DeportistaResponse
-from app.crud.deportista import crear_deportista, listar_deportistas, obtener_deportista
+from app.crud.deportista import crear_deportista, listar_deportistas, obtener_deportista, eliminar_deportista
 from app.models.deportista import Deportista
 
 router = APIRouter()
@@ -44,3 +44,10 @@ def obtener(deportista_id: str, db: Session = Depends(get_db)):
     if not deportista:
         raise HTTPException(status_code=404, detail="Deportista no encontrado")
     return deportista
+
+@router.delete("/{deportista_id}", status_code=204)
+def eliminar(deportista_id: str, db: Session = Depends(get_db)):
+    """Eliminar un deportista por ID"""
+    success = eliminar_deportista(db, deportista_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Deportista no encontrado")

@@ -35,3 +35,12 @@ def listar_deportistas(db):
 
 def obtener_deportista(db, deportista_id):
     return db.query(Deportista).filter(Deportista.id == deportista_id).first()
+
+def eliminar_deportista(db: Session, deportista_id: str):
+    """Eliminar un deportista por ID"""
+    deportista = db.query(Deportista).filter(Deportista.id == deportista_id).first()
+    if not deportista:
+        return False
+    db.delete(deportista)
+    db.commit()
+    return True
