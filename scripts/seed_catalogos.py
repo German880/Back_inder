@@ -68,6 +68,14 @@ try:
                 {"codigo": "RES", "nombre": "Realizada"},
                 {"codigo": "NOPRES", "nombre": "No Presentó"}
             ]
+        },
+        "estado_historia": {
+            "descripcion": "Estados de la historia clínica",
+            "items": [
+                {"codigo": "ABIERTA", "nombre": "Abierta"},
+                {"codigo": "CERRADA", "nombre": "Cerrada"},
+                {"codigo": "ARCHIVADA", "nombre": "Archivada"}
+            ]
         }
     }
     

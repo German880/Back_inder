@@ -18,6 +18,7 @@ class Deportista(Base):
     telefono = Column(String(20))
     email = Column(String(100))
     direccion = Column(Text)
+    tipo_deporte = Column(String(100))
     estado_id = Column(UUID(as_uuid=True), ForeignKey("catalogo_items.id"), nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
 

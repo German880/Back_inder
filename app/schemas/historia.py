@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from uuid import UUID
 from datetime import datetime
 from typing import Optional, List
@@ -73,17 +73,18 @@ class AyudaDiagnosticaBase(BaseModel):
     nombrePrueba: str
     codigoCUPS: str
     resultado: Optional[str] = None
+    archivosAdjuntos: Optional[List] = None  # Lista de archivos (meta información)
 
 class AyudaDiagnosticaCreate(AyudaDiagnosticaBase):
-    pass
+    model_config = ConfigDict(extra='ignore')  # Permite ignorar propiedades adicionales de File
 
 # ============================================================================
 # DIAGNÓSTICO
 # ============================================================================
 
 class DiagnosticoCinicoBase(BaseModel):
-    codigoCIE11: str
-    nombreEnfermedad: str
+    codigo: str
+    nombre: str
     observaciones: Optional[str] = None
 
 class DiagnosticoCinicoCreate(DiagnosticoCinicoBase):
@@ -157,15 +158,67 @@ class HistoriaClinicaCompleteCreate(BaseModel):
     ayudasDiagnosticas: List[AyudaDiagnosticaCreate] = []
     
     # Paso 6: Diagnóstico
-    analisisObjetivo: Optional[str] = None
+    analisisObjetivoDiagnostico: Optional[str] = None
     impresionDiagnostica: Optional[str] = None
-    diagnosticosClinicos: List[DiagnosticoCinicoCreate] = []
+    diagnosticos: List[DiagnosticoCinicoCreate] = []
     
     # Paso 7: Plan de Tratamiento
     indicacionesMedicas: Optional[str] = None
     recomendacionesEntrenamiento: Optional[str] = None
     planSeguimiento: Optional[str] = None
     remisionesEspecialistas: List[RemisionEspecialistaCreate] = []
+    
+    model_config = ConfigDict(extra='ignore')  # Ignorar campos adicionales
+
+# ============================================================================
+# MOTIVO DE CONSULTA Y ENFERMEDAD ACTUAL
+# ============================================================================
+
+class MotivoConsultaEnfermedadBase(BaseModel):
+    motivo_consulta: str
+    sintomas_principales: Optional[str] = None
+    duracion_sintomas: Optional[str] = None
+    inicio_enfermedad: Optional[str] = None
+    evolucion: Optional[str] = None
+    factor_desencadenante: Optional[str] = None
+    medicamentos_previos: Optional[str] = None
+
+class MotivoConsultaEnfermedadCreate(MotivoConsultaEnfermedadBase):
+    pass
+
+class MotivoConsultaEnfermedadResponse(MotivoConsultaEnfermedadBase):
+    id: UUID
+    historia_clinica_id: UUID
+    created_at: datetime
+    
+    model_config = ConfigDict(from_attributes=True)
+
+# ============================================================================
+# EXPLORACIÓN FÍSICA POR SISTEMAS
+# ============================================================================
+
+class ExploracionFisicaSistemasBase(BaseModel):
+    sistema_cardiovascular: Optional[str] = None
+    sistema_respiratorio: Optional[str] = None
+    sistema_digestivo: Optional[str] = None
+    sistema_neurologico: Optional[str] = None
+    sistema_genitourinario: Optional[str] = None
+    sistema_musculoesqueletico: Optional[str] = None
+    sistema_integumentario: Optional[str] = None
+    sistema_endocrino: Optional[str] = None
+    cabeza_cuello: Optional[str] = None
+    extremidades: Optional[str] = None
+    observaciones_generales: Optional[str] = None
+
+class ExploracionFisicaSistemasCreate(ExploracionFisicaSistemasBase):
+    pass
+
+class ExploracionFisicaSistemasResponse(ExploracionFisicaSistemasBase):
+    id: UUID
+    historia_clinica_id: UUID
+    created_at: datetime
+    
+    model_config = ConfigDict(from_attributes=True)
 
 # ============================================================================
 # RESPUESTAS

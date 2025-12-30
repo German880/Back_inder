@@ -18,6 +18,24 @@ from app.crud.historia import (
 
 router = APIRouter()
 
+@router.post("/completa")
+def guardar_historia_completa(data: HistoriaClinicaCompleteCreate, db: Session = Depends(get_db)):
+    """
+    Guardar una historia clínica completa con todos los 7 pasos
+    
+    POST /api/v1/historias_clinicas/completa
+    """
+    try:
+        resultado = crear_historia_completa(db, data)
+        return resultado
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        import traceback
+        print(f"Error en crear_historia_completa: {str(e)}")
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Error interno: {str(e)}")
+
 @router.post("/", response_model=HistoriaResponse)
 def crear(data: HistoriaCreate, db: Session = Depends(get_db)):
     return crear_historia(db, data.deportista_id)
@@ -40,21 +58,6 @@ def historia_completa(historia_id: str, db: Session = Depends(get_db)):
     if not data:
         raise HTTPException(status_code=404, detail="Historia clínica no encontrada")
     return data
-
-@router.post("/completa")
-def guardar_historia_completa(data: HistoriaClinicaCompleteCreate, db: Session = Depends(get_db)):
-    """
-    Guardar una historia clínica completa con todos los 7 pasos
-    
-    POST /api/v1/historias_clinicas/completa
-    """
-    try:
-        resultado = crear_historia_completa(db, data)
-        return resultado
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error interno: {str(e)}")
 
 @router.get("/{historia_id}/datos-completos")
 def obtener_datos_historia(historia_id: str, db: Session = Depends(get_db)):

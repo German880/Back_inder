@@ -12,6 +12,7 @@ class ArchivoClinico(Base):
     historia_clinica_id = Column(UUID(as_uuid=True), ForeignKey("historias_clinicas.id"), nullable=False)
     formulario_id = Column(UUID(as_uuid=True), ForeignKey("formularios.id"), nullable=True)
     grupo_id = Column(UUID(as_uuid=True), ForeignKey("respuesta_grupos.id"), nullable=True)
+    prueba_complementaria_id = Column(UUID(as_uuid=True), ForeignKey("pruebas_complementarias.id"), nullable=True)
     nombre_archivo = Column(String(255), nullable=False)
     ruta_archivo = Column(Text, nullable=False)
     tipo_archivo = Column(String(50), nullable=False)
@@ -21,3 +22,4 @@ class ArchivoClinico(Base):
     historia_clinica = relationship("HistoriaClinica")
     formulario = relationship("Formulario")
     grupo = relationship("RespuestaGrupo")
+    prueba = relationship("PruebasComplementarias", back_populates="archivos")

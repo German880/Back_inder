@@ -5,6 +5,12 @@ from app.models.archivo import ArchivoClinico
 from app.models.cita import Cita
 from app.models.catalogo import Catalogo, CatalogoItem
 from app.models.plantilla import PlantillaClinica
+from app.models.antecedentes import (
+    AntecedentesPersonales, AntecedentesFamiliares, LesioneDeportivas,
+    CirugiasPrivas, Alergias, Medicaciones, VacunasAdministradas,
+    RevisionSistemas, SignosVitales, PruebasComplementarias,
+    Diagnosticos, PlanTratamiento, RemisionesEspecialistas
+)
 
 __all__ = [
     "Deportista",
@@ -18,5 +24,18 @@ __all__ = [
     "Cita",
     "Catalogo",
     "CatalogoItem",
-    "PlantillaClinica"
+    "PlantillaClinica",
+    "AntecedentesPersonales",
+    "AntecedentesFamiliares",
+    "LesioneDeportivas",
+    "CirugiasPrivas",
+    "Alergias",
+    "Medicaciones",
+    "VacunasAdministradas",
+    "RevisionSistemas",
+    "SignosVitales",
+    "PruebasComplementarias",
+    "Diagnosticos",
+    "PlanTratamiento",
+    "RemisionesEspecialistas"
 ]

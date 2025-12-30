@@ -1,7 +1,13 @@
-from pydantic import BaseModel
-from datetime import date, time
+from pydantic import BaseModel, ConfigDict
+from datetime import date, time, datetime
 from uuid import UUID
 from typing import Optional
+
+class CatalogoItemSimple(BaseModel):
+    id: UUID
+    nombre: str
+    
+    model_config = ConfigDict(from_attributes=True)
 
 class CitaCreate(BaseModel):
     deportista_id: str  # UUID como string
@@ -11,8 +17,7 @@ class CitaCreate(BaseModel):
     estado_cita_id: str  # UUID como string
     observaciones: Optional[str] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class CitaUpdate(BaseModel):
     fecha: Optional[str] = None
@@ -21,18 +26,18 @@ class CitaUpdate(BaseModel):
     estado_cita_id: Optional[str] = None
     observaciones: Optional[str] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class CitaResponse(BaseModel):
-    id: str
-    deportista_id: str
-    fecha: str
-    hora: str
-    tipo_cita_id: str
-    estado_cita_id: str
+    id: UUID
+    deportista_id: UUID
+    fecha: date
+    hora: time
+    tipo_cita_id: UUID
+    estado_cita_id: UUID
     observaciones: Optional[str]
-    created_at: Optional[str]
+    created_at: Optional[datetime]
+    tipo_cita: Optional[CatalogoItemSimple] = None
+    estado_cita: Optional[CatalogoItemSimple] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

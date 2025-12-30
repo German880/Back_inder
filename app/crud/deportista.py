@@ -44,3 +44,29 @@ def eliminar_deportista(db: Session, deportista_id: str):
     db.delete(deportista)
     db.commit()
     return True
+
+def actualizar_deportista(db: Session, deportista_id: str, data):
+    """Actualizar un deportista existente"""
+    deportista = db.query(Deportista).filter(Deportista.id == deportista_id).first()
+    if not deportista:
+        return None
+    
+    try:
+        # Actualizar solo los campos que vienen en data
+        for key, value in data.dict(exclude_unset=True).items():
+            if value is not None:
+                setattr(deportista, key, value)
+        
+        db.commit()
+        db.refresh(deportista)
+        return deportista
+        
+    except IntegrityError as e:
+        db.rollback()
+        if "numero_documento" in str(e):
+            raise ValueError("El número de documento ya existe en el sistema")
+        raise ValueError(f"Error de integridad: {str(e)}")
+        
+    except Exception as e:
+        db.rollback()
+        raise
