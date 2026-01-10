@@ -1,15 +1,19 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+import logging
 
 from app.core.config import settings
-from app.core.database import Base, engine   # ✅ CORRECTO
+from app.core.database import Base, engine
+
+# Configurar logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Registrar modelos
 from app.models import *
 
 # Routers
 from app.api.v1 import deportistas, historias, citas, archivos, cie11, cups, catalogos, antecedentes, historia_completa, historias_completa, documentos
-
 app = FastAPI(
     title=settings.APP_NAME,
     version="0.1.0",
@@ -26,7 +30,14 @@ app.add_middleware(
 
 @app.on_event("startup")
 def startup_event():
-    Base.metadata.create_all(bind=engine)
+    """Intenta crear las tablas, pero no falla si hay error de BD"""
+    try:
+        logger.info("Intentando crear tablas en la BD...")
+        Base.metadata.create_all(bind=engine)
+        logger.info("Tablas creadas exitosamente")
+    except Exception as e:
+        logger.warning(f"No se pudieron crear las tablas: {str(e)}")
+        logger.warning("El servidor seguirá funcionando, pero necesitas crear las tablas manualmente")
 
 @app.get("/health", tags=["Health"])
 def health_check():
