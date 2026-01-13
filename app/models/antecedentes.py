@@ -72,6 +72,23 @@ class Alergias(Base):
 
     historia_clinica = relationship("HistoriaClinica")
 
+class VacunasDeportista(Base):
+
+    __tablename__ = "vacunas_deportista"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    deportista_id = Column(UUID(as_uuid=True), ForeignKey("deportistas.id"), nullable=False)
+    nombre_vacuna = Column(String(255), nullable=False)  # Tétanos, Hepatitis, etc.
+    fecha_administracion = Column(Date)
+    ruta_archivo = Column(Text)  # Ruta del archivo adjunto
+    nombre_archivo = Column(String(255))  # Nombre del archivo original
+    tipo_archivo = Column(String(50))  # pdf, jpg, png, etc.
+    observaciones = Column(Text)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Relaciones
+    deportista = relationship("Deportista", back_populates="vacunas")
 
 class Medicaciones(Base):
     __tablename__ = "medicaciones"

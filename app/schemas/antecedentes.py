@@ -120,6 +120,55 @@ class AlergiasResponse(AlergiasBase):
 
 
 # ============================================================================
+# VACUNAS DEPORTISTA
+# ============================================================================
+
+class VacunaDeportistaBase(BaseModel):
+    nombre_vacuna: str
+    fecha_administracion: Optional[date] = None
+    observaciones: Optional[str] = None
+    nombre_archivo: Optional[str] = None
+    tipo_archivo: Optional[str] = None
+
+
+class VacunaDeportistaCreate(VacunaDeportistaBase):
+    """Para crear una vacuna (sin archivo, se sube por separado)"""
+    pass
+
+
+class VacunaDeportistaUpload(BaseModel):
+    """Schema para recibir información del archivo"""
+    nombre_vacuna: str
+    fecha_administracion: Optional[date] = None
+    observaciones: Optional[str] = None
+
+
+class VacunaDeportistaResponse(VacunaDeportistaBase):
+    id: UUID
+    deportista_id: UUID
+    ruta_archivo: Optional[str] = None
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class VacunaDeportistaListResponse(BaseModel):
+    """Para listar todas las vacunas de un deportista"""
+    id: UUID
+    deportista_id: UUID
+    nombre_vacuna: str
+    fecha_administracion: Optional[date] = None
+    observaciones: Optional[str] = None
+    nombre_archivo: Optional[str] = None
+    tipo_archivo: Optional[str] = None
+    ruta_archivo: Optional[str] = None
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+# ============================================================================
 # MEDICACIONES
 # ============================================================================
 

@@ -28,3 +28,4 @@ class Deportista(Base):
     estado = relationship("CatalogoItem", foreign_keys=[estado_id])
     historias = relationship("HistoriaClinica", back_populates="deportista")
     citas = relationship("Cita", back_populates="deportista")
+    vacunas = relationship("VacunasDeportista", back_populates="deportista", cascade="all, delete-orphan")

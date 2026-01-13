@@ -1,15 +1,21 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
+import logging
 
 from app.core.config import settings
-from app.core.database import Base, engine   # ✅ CORRECTO
+from app.core.database import Base, engine
+
+# Configurar logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Registrar modelos
 from app.models import *
 
 # Routers
 from app.api.v1 import deportistas, historias, citas, archivos, cie11, cups, catalogos, antecedentes, historia_completa, historias_completa, documentos
-
 app = FastAPI(
     title=settings.APP_NAME,
     version="0.1.0",
@@ -24,9 +30,26 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request, exc):
+    """Manejar errores de validación de Pydantic con más detalle"""
+    print(f"DEBUG: Validation error details: {exc.errors()}")
+    logger.error(f"Validation error: {exc.errors()}")
+    return JSONResponse(
+        status_code=422,
+        content={"detail": exc.errors(), "body": exc.body if hasattr(exc, 'body') else None}
+    )
+
 @app.on_event("startup")
 def startup_event():
-    Base.metadata.create_all(bind=engine)
+    """Intenta crear las tablas, pero no falla si hay error de BD"""
+    try:
+        logger.info("Intentando crear tablas en la BD...")
+        Base.metadata.create_all(bind=engine)
+        logger.info("Tablas creadas exitosamente")
+    except Exception as e:
+        logger.warning(f"No se pudieron crear las tablas: {str(e)}")
+        logger.warning("El servidor seguirá funcionando, pero necesitas crear las tablas manualmente")
 
 @app.get("/health", tags=["Health"])
 def health_check():

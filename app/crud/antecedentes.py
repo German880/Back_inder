@@ -7,15 +7,19 @@ from app.models.antecedentes import (
     AntecedentesPersonales, AntecedentesFamiliares, LesioneDeportivas,
     CirugiasPrivas, Alergias, Medicaciones, VacunasAdministradas,
     RevisionSistemas, SignosVitales, PruebasComplementarias,
-    Diagnosticos, PlanTratamiento, RemisionesEspecialistas
+    Diagnosticos, PlanTratamiento, RemisionesEspecialistas, VacunasDeportista
 )
 from app.schemas.antecedentes import (
     AntecedentesPersonalesCreate, AntecedentesFamiliaresCreate,
     LesioneDeportavasCreate, CirugiasPrivasCreate, AlergiasCreate,
     MedicacionesCreate, VacunasAdministradasCreate, RevisionSistemasCreate,
     SignosVitalesCreate, PruebasComplementariasCreate, DiagnosticosCreate,
-    PlanTratamientoCreate, RemisionesEspecialistasCreate
+    PlanTratamientoCreate, RemisionesEspecialistasCreate, VacunaDeportistaCreate
 )
+from datetime import datetime
+import os
+
+
 
 
 # ============================================================================
@@ -133,6 +137,116 @@ def eliminar_alergia(db: Session, alergia_id: UUID):
     db.commit()
 
 
+
+# ============================================================================
+# CREAR VACUNA
+# ============================================================================
+
+def crear_vacuna_deportista(db: Session, deportista_id: UUID, data: VacunaDeportistaCreate):
+    """Crear una nueva vacuna para un deportista"""
+    db_obj = VacunasDeportista(
+        deportista_id=deportista_id,
+        nombre_vacuna=data.nombre_vacuna,
+        fecha_administracion=data.fecha_administracion,
+        observaciones=data.observaciones
+    )
+    db.add(db_obj)
+    db.commit()
+    db.refresh(db_obj)
+    return db_obj
+
+
+def actualizar_archivo_vacuna(db: Session, vacuna_id: UUID, ruta_archivo: str, nombre_archivo: str, tipo_archivo: str):
+    """Actualizar la información del archivo en la vacuna"""
+    vacuna = db.query(VacunasDeportista).filter(VacunasDeportista.id == vacuna_id).first()
+    if vacuna:
+        vacuna.ruta_archivo = ruta_archivo
+        vacuna.nombre_archivo = nombre_archivo
+        vacuna.tipo_archivo = tipo_archivo
+        vacuna.updated_at = datetime.utcnow()
+        db.commit()
+        db.refresh(vacuna)
+    return vacuna
+
+
+# ============================================================================
+# OBTENER VACUNAS
+# ============================================================================
+
+def obtener_vacunas_deportista(db: Session, deportista_id: UUID):
+    """Obtener todas las vacunas de un deportista"""
+    return db.query(VacunasDeportista).filter(
+        VacunasDeportista.deportista_id == deportista_id
+    ).order_by(VacunasDeportista.created_at.desc()).all()
+
+
+def obtener_vacuna_por_id(db: Session, vacuna_id: UUID):
+    """Obtener una vacuna específica por ID"""
+    return db.query(VacunasDeportista).filter(
+        VacunasDeportista.id == vacuna_id
+    ).first()
+
+
+def obtener_vacuna_por_deportista_y_nombre(db: Session, deportista_id: UUID, nombre_vacuna: str):
+    """Obtener una vacuna específica de un deportista por nombre"""
+    return db.query(VacunasDeportista).filter(
+        VacunasDeportista.deportista_id == deportista_id,
+        VacunasDeportista.nombre_vacuna == nombre_vacuna
+    ).first()
+
+
+# ============================================================================
+# ACTUALIZAR VACUNA
+# ============================================================================
+
+def actualizar_vacuna(db: Session, vacuna_id: UUID, data: VacunaDeportistaCreate):
+    """Actualizar información de una vacuna (excepto archivo)"""
+    vacuna = obtener_vacuna_por_id(db, vacuna_id)
+    if vacuna:
+        vacuna.nombre_vacuna = data.nombre_vacuna
+        vacuna.fecha_administracion = data.fecha_administracion
+        vacuna.observaciones = data.observaciones
+        vacuna.updated_at = datetime.utcnow()
+        db.commit()
+        db.refresh(vacuna)
+    return vacuna
+
+
+# ============================================================================
+# ELIMINAR VACUNA
+# ============================================================================
+
+def eliminar_vacuna(db: Session, vacuna_id: UUID, eliminar_archivo: bool = True):
+    """Eliminar una vacuna y opcionalmente su archivo"""
+    vacuna = obtener_vacuna_por_id(db, vacuna_id)
+    if vacuna:
+        # Eliminar archivo si existe
+        if eliminar_archivo and vacuna.ruta_archivo:
+            try:
+                if os.path.exists(vacuna.ruta_archivo):
+                    os.remove(vacuna.ruta_archivo)
+            except Exception as e:
+                print(f"Error eliminando archivo: {e}")
+        
+        db.delete(vacuna)
+        db.commit()
+        return True
+    return False
+
+
+# ============================================================================
+# LISTAR VACUNAS PREDEFINIDAS
+# ============================================================================
+
+def obtener_vacunas_predefinidas():
+    """Obtener lista de vacunas predefinidas"""
+    return [
+        "Tétanos",
+        "Hepatitis",
+        "Influenza",
+        "COVID-19",
+        "Fiebre Amarilla"
+    ]
 # ============================================================================
 # MEDICACIONES
 # ============================================================================

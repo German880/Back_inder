@@ -2,36 +2,55 @@ import os
 from urllib.parse import quote_plus
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
+from sqlalchemy.pool import NullPool
 from dotenv import load_dotenv
 
-load_dotenv()  # 🔴 OBLIGATORIO en Windows
+load_dotenv()
 
-DB_HOST = os.getenv("DB_HOST")
-DB_PORT = os.getenv("DB_PORT")
-DB_NAME = os.getenv("DB_NAME")
-DB_USER = os.getenv("DB_USER")
-DB_PASSWORD = os.getenv("DB_PASSWORD")
+# Obtener variables de entorno
+DB_HOST = os.getenv("DB_HOST", "localhost")
+DB_PORT = os.getenv("DB_PORT", "5432")
+DB_NAME = os.getenv("DB_NAME", "Inder")
+DB_USER = os.getenv("DB_USER", "postgres")
+DB_PASSWORD = os.getenv("DB_PASSWORD", "1234")
 
-# Codificar la contraseña para caracteres especiales
-encoded_password = quote_plus(DB_PASSWORD)
+# Codificar la contraseña correctamente
+try:
+    encoded_password = quote_plus(str(DB_PASSWORD))
+except Exception as e:
+    print(f"Error codificando password: {e}")
+    encoded_password = DB_PASSWORD
 
-DATABASE_URL = (
-    f"postgresql://{DB_USER}:{encoded_password}"
-    f"@{DB_HOST}:{DB_PORT}/{DB_NAME}"
-)
+# Construir URL de conexión
+DATABASE_URL = f"postgresql://{DB_USER}:{encoded_password}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
-engine = create_engine(
-    DATABASE_URL,
-    echo=True,
-    client_encoding="utf8"
-)
+print(f"[DB] Conectando a: postgresql://{DB_USER}:***@{DB_HOST}:{DB_PORT}/{DB_NAME}")
 
+try:
+    # Crear engine con configuración robusta
+    engine = create_engine(
+        DATABASE_URL,
+        echo=False,
+        pool_pre_ping=True,
+        pool_recycle=3600,
+        connect_args={
+            "connect_timeout": 10,
+            "options": "-c statement_timeout=30000"
+        }
+    )
+    print("[DB] Engine creado exitosamente")
+except Exception as e:
+    print(f"[DB] Error creando engine: {e}")
+    raise
+
+# Session factory
 SessionLocal = sessionmaker(
     autocommit=False,
     autoflush=False,
     bind=engine
 )
 
+# Base para los modelos
 Base = declarative_base()
 
 def get_db():
@@ -42,5 +61,9 @@ def get_db():
     db = SessionLocal()
     try:
         yield db
+    except Exception as e:
+        print(f"[DB] Error en sesión: {e}")
+        db.rollback()
+        raise
     finally:
         db.close()
