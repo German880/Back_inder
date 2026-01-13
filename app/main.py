@@ -1,5 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 import logging
 
 from app.core.config import settings
@@ -27,6 +29,16 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request, exc):
+    """Manejar errores de validación de Pydantic con más detalle"""
+    print(f"DEBUG: Validation error details: {exc.errors()}")
+    logger.error(f"Validation error: {exc.errors()}")
+    return JSONResponse(
+        status_code=422,
+        content={"detail": exc.errors(), "body": exc.body if hasattr(exc, 'body') else None}
+    )
 
 @app.on_event("startup")
 def startup_event():

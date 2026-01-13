@@ -43,11 +43,18 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 def crear(data: DeportistaCreate, db: Session = Depends(get_db)):
     """Crear un nuevo deportista"""
     try:
+        # Debug: log the incoming data
+        print(f"DEBUG: Datos recibidos en POST deportistas: {data.dict()}")
+        print(f"DEBUG: Tipos de datos: tipo_documento_id={type(data.tipo_documento_id).__name__}, sexo_id={type(data.sexo_id).__name__}, estado_id={type(data.estado_id).__name__}")
         return crear_deportista(db, data)
     except ValueError as e:
+        print(f"DEBUG: ValueError en crear_deportista: {str(e)}")
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        raise HTTPException(status_code=500, detail="Error al crear deportista")
+        print(f"DEBUG: Exception en crear_deportista: {type(e).__name__}: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Error al crear deportista: {str(e)}")
 
 @router.get("", response_model=list[DeportistaResponse])
 def listar(db: Session = Depends(get_db)):
